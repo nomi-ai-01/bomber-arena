@@ -3,7 +3,12 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Bomber Arena</title>
+<title>Bomber Arena - Free Bomberman Style Browser Game</title>
+<meta name="description" content="Bomber Arena is a free bomber game for mobile and PC. Beat 5 stages, play the daily challenge, collect power-ups and survive the shrinking arena.">
+<meta name="theme-color" content="#0e1220">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta property="og:title" content="Bomber Arena">
+<meta property="og:description" content="Free bomber game: 5 stages, daily challenge, bots and a shrinking arena.">
 <style>
 :root{--bg:#e9ecf4;--panel:#ffffff;--text:#161a2a;--muted:#5b6482;--accent:#ff5a2e;--line:#c9cfe0;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e1220;--panel:#1a2036;--text:#eef1fa;--muted:#9aa5c6;--line:#2c3556}}
@@ -33,6 +38,10 @@ body{height:100%;margin:0;background:var(--bg);color:var(--text);font-family:"Tr
 #stg button{margin:0;width:54px;height:54px;min-height:0;padding:0;font-size:22px;background:transparent;color:var(--text);border-color:var(--line)}
 #stg button.sel{background:var(--accent);color:#fff;border-color:var(--accent)}
 #stg button:disabled{opacity:.35;cursor:not-allowed}
+#skn{display:flex;gap:12px;justify-content:center;margin:6px 0}
+#skn button{margin:0;width:54px;height:54px;min-height:0;padding:0;border-radius:50%;border:3px solid var(--line)}
+#skn button.sel{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent)}
+.card .cl{margin:8px 0 2px;font-size:13px}
 .card .tip{font-size:13px;margin:14px 0 0}
 button:focus-visible{outline:3px solid #ffbf3d;outline-offset:2px}
 #touch{display:none;justify-content:space-between;align-items:center;padding:8px 18px 12px}
@@ -60,10 +69,13 @@ button:focus-visible{outline:3px solid #ffbf3d;outline-offset:2px}
 <div id="ov"><div class="card">
 <h1 id="ot">Bomber Arena</h1>
 <p id="os">Blow up the bricks, grab power-ups and beat 3 bots. After 40 seconds the arena starts to shrink.</p>
-<div id="stg"></div>
+<div id="pk"><p class="cl">Pick your character, then a stage</p><div id="skn"></div><div id="stg"></div></div>
 <button id="go">Play</button>
+<button id="dl" class="sec">Daily challenge</button>
 <button id="sh" class="sec" hidden>Share score</button>
+<button id="mn" class="sec" hidden>Main menu</button>
 <p class="tip" id="tp">Move: arrow keys or WASD. Bomb: Space. Pause: P.</p>
+<p class="tip" id="lb"></p>
 </div></div>
 </div>
 <div id="touch">
@@ -77,11 +89,12 @@ const DIRS=[[0,-1],[1,0],[0,1],[-1,0]];
 const COLS=['#3da5ff','#ff5d73','#44d17a','#ffc83d'];
 const SP=[[1,1],[W-2,1],[1,H-2],[W-2,H-2]];
 const STAGES=[{n:'Warm-up',bots:1,spd:2.8,dens:.6,shr:55},{n:'Brick yard',bots:2,spd:3.2,dens:.72,shr:45},{n:'Triple threat',bots:3,spd:3.4,dens:.74,shr:40},{n:'Fast bots',bots:3,spd:4,dens:.78,shr:32},{n:'Final arena',bots:3,spd:4.6,dens:.8,shr:25}];
-let lvl=0,unlocked=1,base=0;
+const SKINS=['#3da5ff','#b46cff','#ff8fd1','#f2f4ff'];
+let lvl=0,unlocked=1,base=0,rng=Math.random,daily=false,skin=0;
 const $=id=>document.getElementById(id);
 const cv=$('c'),ctx=cv.getContext('2d'),stage=$('stage');
 let grid,items,bombs,flames,ps,state='menu',time=0,an=0,score=0,best=0,endT=0,result='',shrinkList=[],shrinkIdx=0,shrinkT=0,held=[],muted=false,bombReq=false;
-try{best=+localStorage.getItem('bomber-best')||0;unlocked=Math.min(5,Math.max(1,+localStorage.getItem('bomber-unlocked')||1))}catch(e){}
+try{best=+localStorage.getItem('bomber-best')||0;unlocked=Math.min(5,Math.max(1,+localStorage.getItem('bomber-unlocked')||1));skin=Math.min(3,+localStorage.getItem('bomber-skin')||0)}catch(e){}
 
 /* ---------- audio ---------- */
 let ac;
@@ -133,13 +146,13 @@ function init(){
  for(let y=0;y<H;y++){grid.push([]);items.push([]);
   for(let x=0;x<W;x++){
    const edge=x===0||y===0||x===W-1||y===H-1;
-   grid[y].push(edge||(x%2===0&&y%2===0)?1:(Math.random()<STAGES[lvl].dens?2:0));
+   grid[y].push(edge||(x%2===0&&y%2===0)?1:(rng()<STAGES[lvl].dens?2:0));
    items[y].push(null);
   }}
  SP.forEach(([sx,sy])=>{for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){
   const x=sx+dx,y=sy+dy;
   if(Math.abs(dx)+Math.abs(dy)<=1&&x>0&&y>0&&x<W-1&&y<H-1&&grid[y][x]===2)grid[y][x]=0;}});
- ps=SP.slice(0,STAGES[lvl].bots+1).map((s,i)=>({i,ai:i>0,cx:s[0],cy:s[1],mv:null,dir:2,alive:true,maxB:1,range:2,spd:i?STAGES[lvl].spd:4.2,col:COLS[i],carry:0}));
+ ps=SP.slice(0,STAGES[lvl].bots+1).map((s,i)=>({i,ai:i>0,cx:s[0],cy:s[1],mv:null,dir:2,alive:true,maxB:1,range:2,spd:i?STAGES[lvl].spd:4.2,col:i?COLS[i]:SKINS[skin],carry:0}));
  shrinkList=spiral();shrinkIdx=0;shrinkT=0;time=0;endT=0;result='';
 }
 
@@ -315,6 +328,13 @@ function drawP(p){
   ctx.fillStyle='#111';ctx.beginPath();ctx.arc(px+s+dx*1.6,py-5-bob+dy*1.4,2.2,0,7);ctx.fill();
  }
  if(!p.ai){
+  const a=skin,ty=py-20-bob;ctx.fillStyle='#222';ctx.strokeStyle='#222';ctx.lineWidth=2;
+  if(a===0){ctx.beginPath();ctx.moveTo(px,ty);ctx.lineTo(px,ty-9);ctx.stroke();ctx.fillStyle='#ff5a2e';ctx.beginPath();ctx.arc(px,ty-11,3.5,0,7);ctx.fill()}
+  else if(a===1){ctx.fillStyle=p.col;for(const s of[-1,1]){ctx.beginPath();ctx.moveTo(px+s*14,ty+3);ctx.lineTo(px+s*13,ty-9);ctx.lineTo(px+s*4,ty);ctx.closePath();ctx.fill();ctx.stroke()}}
+  else if(a===2){ctx.fillStyle='#ffd23d';ctx.beginPath();ctx.moveTo(px-10,ty+2);ctx.lineTo(px-10,ty-8);ctx.lineTo(px-5,ty-3);ctx.lineTo(px,ty-10);ctx.lineTo(px+5,ty-3);ctx.lineTo(px+10,ty-8);ctx.lineTo(px+10,ty+2);ctx.closePath();ctx.fill();ctx.stroke()}
+  else{ctx.fillRect(px-13,py-8-bob,26,6)}
+ }
+ if(!p.ai){
   const b=Math.sin(an*6)*2;
   ctx.fillStyle='#fff';ctx.beginPath();ctx.moveTo(px-6,py-31-bob+b);ctx.lineTo(px+6,py-31-bob+b);ctx.lineTo(px,py-24-bob+b);ctx.closePath();ctx.fill();
  }
@@ -370,29 +390,39 @@ function setHud(){
 }
 function showOv(title,sub,btn,share){
  $('ot').textContent=title;$('os').textContent=sub;go.textContent=btn;sh.hidden=!share;
- $('tp').hidden=state==='over';$('stg').hidden=state!=='menu';ov.hidden=false;
+ $('tp').hidden=state==='over';$('pk').hidden=state!=='menu';$('dl').hidden=state!=='menu';$('mn').hidden=state==='menu';$('lb').textContent=lbText();ov.hidden=false;
 }
-function begin(newRun){if(newRun)score=0;base=score;init();held=[];state='play';ov.hidden=true;go.blur();snd(440,.15,'triangle',.05,200)}
+function mul(a){return()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function dayKey(){const d=new Date();return d.getFullYear()*10000+(d.getMonth()+1)*100+d.getDate()}
+function lbText(){let a=[],d=0;try{a=JSON.parse(localStorage.getItem('bomber-lb')||'[]');d=+localStorage.getItem('bomber-d'+dayKey())||0}catch(e){}const t=a.length?'Top scores: '+a.map(x=>x.s).join(', ')+'.':'';return t+(d?(t?' ':'')+'Daily best today: '+d+'.':'')}
+function buildSkn(){const e=$('skn');e.innerHTML='';SKINS.forEach((s,i)=>{const b=document.createElement('button');b.style.background=s;b.className=i===skin?'sel':'';b.setAttribute('aria-label','Character '+(i+1));b.onclick=()=>{skin=i;try{localStorage.setItem('bomber-skin',String(i))}catch(x){}init();buildSkn()};e.appendChild(b)})}
+let mt=null,mstep=0;const NOTES=[110,0,131,0,147,0,131,0,110,0,165,0,147,0,131,0];
+function music(on){clearInterval(mt);mt=null;if(on&&!muted)mt=setInterval(()=>{const n=NOTES[mstep++%16];if(n)snd(n,.2,'triangle',.025)},230)}
+function begin(newRun){if(newRun)score=0;base=score;rng=daily?mul(dayKey()*10+lvl):Math.random;init();held=[];state='play';ov.hidden=true;go.blur();snd(440,.15,'triangle',.05,200);music(true)}
 function desc(){const s=STAGES[lvl];return 'Stage '+(lvl+1)+': '+s.n+'. Beat '+s.bots+(s.bots>1?' bots':' bot')+' before the arena starts shrinking at '+s.shr+' seconds.'}
 function buildStg(){const e=$('stg');e.innerHTML='';STAGES.forEach((s,i)=>{const b=document.createElement('button');b.textContent=i+1;b.disabled=i>=unlocked;b.title=s.n;b.className=i===lvl?'sel':'';b.onclick=()=>{lvl=i;buildStg();$('os').textContent=desc()};e.appendChild(b)})}
-function pause(){if(state!=='play')return;state='pause';held=[];showOv('Paused','Take a break. Your game is waiting.','Resume',false)}
-function resume(){if(state!=='pause')return;state='play';ov.hidden=true;go.blur()}
+function pause(){if(state!=='play')return;state='pause';held=[];music(false);showOv('Paused','Take a break. Your game is waiting.','Resume',false)}
+function resume(){if(state!=='pause')return;state='play';ov.hidden=true;go.blur();music(true)}
 function finish(){
- state='over';
+ state='over';music(false);
+ try{if(score>0){const a=JSON.parse(localStorage.getItem('bomber-lb')||'[]');a.push({s:score});a.sort((x,y)=>y.s-x.s);localStorage.setItem('bomber-lb',JSON.stringify(a.slice(0,5)));if(daily){const k='bomber-d'+dayKey();if(score>(+localStorage.getItem(k)||0))localStorage.setItem(k,String(score))}}}catch(e){}
  if(score>best){best=score;try{localStorage.setItem('bomber-best',String(best))}catch(e){}}
  const last=lvl===STAGES.length-1,win=result==='win';
- if(win&&!last){unlocked=Math.max(unlocked,lvl+2);try{localStorage.setItem('bomber-unlocked',String(unlocked))}catch(e){}}
- const t=win?(last?'All stages cleared!':'Stage '+(lvl+1)+' cleared!'):result==='draw'?'Draw':'You were blown up';
+ if(win&&!last&&!daily){unlocked=Math.max(unlocked,lvl+2);try{localStorage.setItem('bomber-unlocked',String(unlocked))}catch(e){}}
+ const t=daily&&win?'Daily cleared!':win?(last?'All stages cleared!':'Stage '+(lvl+1)+' cleared!'):result==='draw'?'Draw':'You were blown up';
  const s=win?'Score: '+score+'.':'Score: '+score+'. Keep an escape route from every bomb.';
- showOv(t,s+' Best: '+best+'.',win?(last?'Play again':'Next stage'):'Retry stage',true);
+ showOv(t,s+' Best: '+best+'.',daily?'Play daily again':win?(last?'Play again':'Next stage'):'Retry stage',true);
 }
 go.addEventListener('click',()=>{
  if(state==='pause')return resume();
+ if(state==='over'&&daily)return begin(true);
  if(state==='over'&&result==='win'&&lvl<STAGES.length-1){lvl++;return begin(false)}
  if(state==='over'&&result==='win'){lvl=0;return begin(true)}
  if(state==='over'){score=base;return begin(false)}
- begin(true);
+ daily=false;begin(true);
 });
+$('dl').addEventListener('click',()=>{daily=true;lvl=2;begin(true)});
+$('mn').addEventListener('click',()=>{daily=false;state='menu';held=[];music(false);init();buildStg();buildSkn();showOv('Bomber Arena',desc(),'Play',false)});
 sh.addEventListener('click',async()=>{
  const text='I scored '+score+' in Bomber Arena! Can you beat me? '+location.href;
  try{
@@ -401,7 +431,7 @@ sh.addEventListener('click',async()=>{
  }catch(e){}
 });
 $('pz').addEventListener('click',()=>state==='pause'?resume():pause());
-$('mu').addEventListener('click',e=>{muted=!muted;e.currentTarget.textContent=muted?'🔇':'🔊'});
+$('mu').addEventListener('click',e=>{muted=!muted;e.currentTarget.textContent=muted?'🔇':'🔊';music(!muted&&state==='play')});
 document.addEventListener('visibilitychange',()=>{if(document.hidden)pause()});
 
 /* keyboard */
@@ -444,7 +474,7 @@ function loop(now){
  draw();setHud();
  requestAnimationFrame(loop);
 }
-init();buildStg();$('os').textContent=desc();resize();
+init();buildStg();buildSkn();$('os').textContent=desc();$('lb').textContent=lbText();resize();
 requestAnimationFrame(loop);
 new ResizeObserver(resize).observe(stage);
 })();
