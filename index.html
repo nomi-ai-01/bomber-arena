@@ -2,26 +2,27 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Bomber Arena - Free Bomberman Style Browser Game</title>
-<meta name="description" content="Bomber Arena is a free bomber game for mobile and PC. Beat 5 stages, play the daily challenge, collect power-ups and survive the shrinking arena.">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>Bomber Arena - Free Browser Bomb Game</title>
+<meta name="description" content="Bomber Arena is a free bomb and maze arcade game for mobile and PC. Beat 5 stages, play the daily challenge, collect power-ups and survive the shrinking arena.">
 <meta name="theme-color" content="#0e1220">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta property="og:title" content="Bomber Arena">
-<meta property="og:description" content="Free bomber game: 5 stages, daily challenge, bots and a shrinking arena.">
+<meta property="og:description" content="Free bomb arena game: 5 stages, daily challenge, bots and a shrinking arena.">
 <style>
 :root{--bg:#e9ecf4;--panel:#ffffff;--text:#161a2a;--muted:#5b6482;--accent:#ff5a2e;--line:#c9cfe0;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e1220;--panel:#1a2036;--text:#eef1fa;--muted:#9aa5c6;--line:#2c3556}}
 :root[data-theme="dark"]{--bg:#0e1220;--panel:#1a2036;--text:#eef1fa;--muted:#9aa5c6;--line:#2c3556}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html{height:100%}
-body{height:100%;margin:0;background:var(--bg);color:var(--text);font-family:"Trebuchet MS","Segoe UI",system-ui,sans-serif;display:flex;flex-direction:column;overflow:hidden;user-select:none;-webkit-user-select:none;touch-action:none}
+body{height:100%;margin:0;background:var(--bg);color:var(--text);font-family:"Trebuchet MS","Segoe UI",system-ui,sans-serif;display:flex;flex-direction:column;overflow:hidden;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;touch-action:none}
 #hud{display:flex;align-items:center;gap:clamp(8px,3vw,22px);padding:8px 12px;border-bottom:1px solid var(--line)}
 .s{display:flex;flex-direction:column;line-height:1.1;min-width:38px}
 .s small{font-size:11px;color:var(--muted)}
 .s b{font-size:clamp(16px,4.5vw,22px);font-variant-numeric:tabular-nums}
 #hud .sp{flex:1}
-#hud button{width:48px;height:48px;border-radius:12px;border:2px solid var(--line);background:var(--panel);color:var(--text);font-size:20px;cursor:pointer}
+#hud button{width:48px;height:48px;border-radius:12px;border:2px solid var(--line);background:var(--panel);color:var(--text);font-size:20px;cursor:pointer;touch-action:manipulation}
 #stage{flex:1;min-height:0;position:relative;overflow:hidden}
 #c{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);border-radius:12px;box-shadow:0 6px 30px rgba(0,0,0,.35)}
 #ov{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(10,14,28,.62);padding:16px}
@@ -29,10 +30,10 @@ body{height:100%;margin:0;background:var(--bg);color:var(--text);font-family:"Tr
 .card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:22px;max-width:380px;width:100%;text-align:center}
 .card h1{margin:0 0 6px;font-size:clamp(26px,7vw,34px);letter-spacing:.5px}
 .card p{margin:6px 0 14px;color:var(--muted);line-height:1.45;font-size:15px}
-.card button{display:block;width:100%;margin-top:10px;padding:18px;min-height:58px;border-radius:14px;font:inherit;font-weight:700;font-size:20px;cursor:pointer;border:2px solid var(--accent);background:var(--accent);color:#fff}
+.card button{display:block;width:100%;margin-top:10px;padding:18px;min-height:58px;border-radius:14px;font:inherit;font-weight:700;font-size:20px;cursor:pointer;border:2px solid var(--accent);background:var(--accent);color:#fff;touch-action:manipulation}
 .card button.sec{background:transparent;color:var(--text);border-color:var(--line)}
 .card button[hidden]{display:none}
-.card{max-height:100%;overflow:auto}
+.card{max-height:100%;overflow:auto;touch-action:pan-y;overscroll-behavior:contain}
 #stg{display:flex;gap:8px;justify-content:center;margin:4px 0 6px}
 #stg[hidden]{display:none}
 #stg button{margin:0;width:54px;height:54px;min-height:0;padding:0;font-size:22px;background:transparent;color:var(--text);border-color:var(--line)}
@@ -43,6 +44,8 @@ body{height:100%;margin:0;background:var(--bg);color:var(--text);font-family:"Tr
 #skn button.sel{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent)}
 .card .cl{margin:8px 0 2px;font-size:13px}
 .card .tip{font-size:13px;margin:14px 0 0}
+@media (max-height:820px){.card{padding:16px}.card p{margin:4px 0 10px}.card button{padding:12px;min-height:50px;font-size:18px}#stg button,#skn button{width:46px;height:46px;min-height:0;padding:0;font-size:20px}}
+@media (pointer:coarse){#tp{display:none}}
 button:focus-visible{outline:3px solid #ffbf3d;outline-offset:2px}
 #touch{display:none;justify-content:space-between;align-items:center;padding:8px 18px 12px}
 @media (pointer:coarse){#touch{display:flex}}
@@ -58,7 +61,7 @@ button:focus-visible{outline:3px solid #ffbf3d;outline-offset:2px}
 <div id="hud">
 <div class="s"><small>Score</small><b id="sc">0</b></div>
 <div class="s"><small>Time</small><b id="tm">0:00</b></div>
-<div class="s"><small>Bots</small><b id="bt">3</b></div>
+<div class="s"><small>Bots</small><b id="bt">1</b></div>
 <div class="s"><small>Stage</small><b id="st">1</b></div>
 <div class="sp"></div>
 <button id="pz" aria-label="Pause">❚❚</button>
@@ -68,7 +71,7 @@ button:focus-visible{outline:3px solid #ffbf3d;outline-offset:2px}
 <canvas id="c"></canvas>
 <div id="ov"><div class="card">
 <h1 id="ot">Bomber Arena</h1>
-<p id="os">Blow up the bricks, grab power-ups and beat 3 bots. After 40 seconds the arena starts to shrink.</p>
+<p id="os">Stage 1: Warm-up. Beat 1 bot before the arena starts shrinking at 55 seconds.</p>
 <div id="pk"><p class="cl">Pick your character, then a stage</p><div id="skn"></div><div id="stg"></div></div>
 <button id="go">Play</button>
 <button id="dl" class="sec">Daily challenge</button>
@@ -90,7 +93,7 @@ const COLS=['#3da5ff','#ff5d73','#44d17a','#ffc83d'];
 const SP=[[1,1],[W-2,1],[1,H-2],[W-2,H-2]];
 const STAGES=[{n:'Warm-up',bots:1,spd:2.8,dens:.6,shr:55},{n:'Brick yard',bots:2,spd:3.2,dens:.72,shr:45},{n:'Triple threat',bots:3,spd:3.4,dens:.74,shr:40},{n:'Fast bots',bots:3,spd:4,dens:.78,shr:32},{n:'Final arena',bots:3,spd:4.6,dens:.8,shr:25}];
 const SKINS=['#3da5ff','#b46cff','#ff8fd1','#f2f4ff'];
-let lvl=0,unlocked=1,base=0,rng=Math.random,daily=false,skin=0;
+let lvl=0,unlocked=1,base=0,rng=Math.random,daily=false,skin=0,prevLvl=0;
 const $=id=>document.getElementById(id);
 const cv=$('c'),ctx=cv.getContext('2d'),stage=$('stage');
 let grid,items,bombs,flames,ps,state='menu',time=0,an=0,score=0,best=0,endT=0,result='',shrinkList=[],shrinkIdx=0,shrinkT=0,held=[],muted=false,bombReq=false;
@@ -116,7 +119,7 @@ function resize(){
  const r=stage.getBoundingClientRect();
  const s=Math.min((r.width-12)/CW,(r.height-12)/CH);
  const w=Math.max(160,Math.floor(CW*s)),h=Math.floor(w*CH/CW);
- const dpr=Math.min(window.devicePixelRatio||1,2);
+ const dpr=Math.min(window.devicePixelRatio||1,3);
  cv.style.width=w+'px';cv.style.height=h+'px';
  cv.width=Math.round(w*dpr);cv.height=Math.round(h*dpr);
 }
@@ -198,42 +201,50 @@ function kill(p,by){
 }
 
 /* ---------- bots ---------- */
-function dangerSet(){
- const s=new Set();
- bombs.forEach(b=>cellsOf(b.x,b.y,b.r).forEach(c=>s.add(c[1]*W+c[0])));
- flames.forEach(f=>s.add(f.y*W+f.x));
- return s;
+/* hazard map: cell -> seconds until it burns (-1 = flames right now) */
+function hazard(){
+ const m=new Map();
+ bombs.forEach(b=>cellsOf(b.x,b.y,b.r).forEach(c=>{const k=c[1]*W+c[0],o=m.get(k);if(o===undefined||b.t<o)m.set(k,b.t)}));
+ flames.forEach(f=>m.set(f.y*W+f.x,-1));
+ return m;
 }
-function bfs(sx,sy,danger,allowD,goal){
- const q=[[sx,sy,-1]],seen=new Set([sy*W+sx]);
+/* flee=false: never enter a hazard cell. flee=true: a bomb cell may be crossed only if the bot gets through before it blows; flames are never entered */
+function bfs(sx,sy,hz,flee,goal,spd){
+ const q=[[sx,sy,-1,0]],seen=new Set([sy*W+sx]);
  for(let i=0;i<q.length;i++){
-  const [x,y,f]=q[i];
+  const [x,y,f,n]=q[i];
   if(i>0&&goal(x,y))return f;
   for(let d=0;d<4;d++){
    const nx=x+DIRS[d][0],ny=y+DIRS[d][1],k=ny*W+nx;
-   if(seen.has(k)||!canEnter(nx,ny)||(!allowD&&danger.has(k)))continue;
-   seen.add(k);q.push([nx,ny,f<0?d:f]);
+   if(seen.has(k)||!canEnter(nx,ny))continue;
+   const h=hz.get(k);
+   if(h!==undefined){
+    if(!flee)continue;
+    if(h<0||(n+1)/spd>h-.4)continue;
+   }
+   seen.add(k);q.push([nx,ny,f<0?d:f,n+1]);
   }
  }
  return -2;
 }
 function enemyAt(p,x,y){return ps.some(q=>q!==p&&q.alive&&lc(q)[0]===x&&lc(q)[1]===y)}
 function decide(p){
- const danger=dangerSet(),here=p.cy*W+p.cx;
- const safe=(x,y)=>!danger.has(y*W+x);
- if(danger.has(here)){
-  const d=bfs(p.cx,p.cy,danger,true,safe);
+ const hz=hazard(),here=p.cy*W+p.cx;
+ const safe=(x,y)=>!hz.has(y*W+x);
+ if(hz.has(here)){
+  const d=bfs(p.cx,p.cy,hz,true,safe,p.spd);
   return d>=0?d:-1;
  }
  if(ownCount(p)<p.maxB&&!bombAt(p.cx,p.cy)&&Math.random()<.7){
   const cells=cellsOf(p.cx,p.cy,p.range);
   if(cells.some(([x,y])=>(x!==p.cx||y!==p.cy)&&(grid[y][x]===2||enemyAt(p,x,y)))){
-   const d2=new Set(danger);cells.forEach(([x,y])=>d2.add(y*W+x));
-   if(bfs(p.cx,p.cy,d2,true,(x,y)=>!d2.has(y*W+x))>=0){placeBomb(p);return -1}
+   const h2=new Map(hz);
+   cells.forEach(([x,y])=>{const k=y*W+x,o=h2.get(k);h2.set(k,o===undefined?2.3:Math.min(o,2.3))});
+   if(bfs(p.cx,p.cy,h2,true,(x,y)=>!h2.has(y*W+x),p.spd)>=0){placeBomb(p);return -1}
   }
  }
  const want=(x,y)=>DIRS.some(([dx,dy])=>grid[y+dy][x+dx]===2||enemyAt(p,x+dx,y+dy));
- let d=bfs(p.cx,p.cy,danger,false,want);
+ let d=bfs(p.cx,p.cy,hz,false,want,p.spd);
  if(d>=0)return d;
  const opts=[0,1,2,3].filter(k=>canEnter(p.cx+DIRS[k][0],p.cy+DIRS[k][1])&&safe(p.cx+DIRS[k][0],p.cy+DIRS[k][1]));
  return opts.length?opts[Math.random()*opts.length|0]:-1;
@@ -389,8 +400,9 @@ function setHud(){
  $('st').textContent=lvl+1;
 }
 function showOv(title,sub,btn,share){
- $('ot').textContent=title;$('os').textContent=sub;go.textContent=btn;sh.hidden=!share;
+ $('ot').textContent=title;$('os').textContent=sub;go.textContent=btn;sh.hidden=!share;sh.textContent='Share score';
  $('tp').hidden=state==='over';$('pk').hidden=state!=='menu';$('dl').hidden=state!=='menu';$('mn').hidden=state==='menu';$('lb').textContent=lbText();ov.hidden=false;
+ $('ov').querySelector('.card').scrollTop=0;
 }
 function mul(a){return()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
 function dayKey(){const d=new Date();return d.getFullYear()*10000+(d.getMonth()+1)*100+d.getDate()}
@@ -419,10 +431,10 @@ go.addEventListener('click',()=>{
  if(state==='over'&&result==='win'&&lvl<STAGES.length-1){lvl++;return begin(false)}
  if(state==='over'&&result==='win'){lvl=0;return begin(true)}
  if(state==='over'){score=base;return begin(false)}
- daily=false;begin(true);
+ daily=false;lvl=Math.min(lvl,unlocked-1);begin(true);
 });
-$('dl').addEventListener('click',()=>{daily=true;lvl=2;begin(true)});
-$('mn').addEventListener('click',()=>{daily=false;state='menu';held=[];music(false);init();buildStg();buildSkn();showOv('Bomber Arena',desc(),'Play',false)});
+$('dl').addEventListener('click',()=>{if(!daily)prevLvl=lvl;daily=true;lvl=2;begin(true)});
+$('mn').addEventListener('click',()=>{if(daily){daily=false;lvl=Math.min(prevLvl,unlocked-1)}state='menu';held=[];music(false);init();buildStg();buildSkn();showOv('Bomber Arena',desc(),'Play',false)});
 sh.addEventListener('click',async()=>{
  const text='I scored '+score+' in Bomber Arena! Can you beat me? '+location.href;
  try{
@@ -469,7 +481,7 @@ let last=performance.now();
 function loop(now){
  const dt=Math.min(.05,(now-last)/1000);last=now;
  an+=dt;
- if(state==='play'||(state==='over'&&false))update(dt);
+ if(state==='play')update(dt);
  else if(state==='over'){flames=flames.filter(f=>(f.t-=dt)>0)}
  draw();setHud();
  requestAnimationFrame(loop);
