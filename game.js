@@ -498,4 +498,5 @@ requestAnimationFrame(loop);
 new ResizeObserver(resize).observe(stage);
 if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
 onlineTop();
+const qs=location.search||'';if(/mode=daily/.test(qs))setTimeout(()=>$('dl').click(),300);else if(/mode=coop/.test(qs))setTimeout(()=>$('p2').click(),300);
 })();
