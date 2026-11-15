@@ -41,3 +41,11 @@ button:focus-visible{outline:3px solid #ffbf3d;outline-offset:2px}
 #dp button:active,#bm:active,#dp button.on,#bm.on{background:var(--accent);color:#fff;border-color:var(--accent)}
 #dp .u{grid-area:u}#dp .l{grid-area:l}#dp .r{grid-area:r}#dp .d{grid-area:d}
 #bm{width:clamp(92px,27vw,116px);height:clamp(92px,27vw,116px);border-radius:50%;font-size:46px}
+
+#touch2{display:none}
+#dp2{--k:clamp(40px,11vw,50px);display:grid;grid-template-columns:repeat(3,var(--k));grid-template-rows:repeat(3,var(--k));grid-template-areas:". u ." "l . r" ". d ."}
+#dp2 button,#bm2{border:2px solid var(--line);background:var(--panel);color:var(--text);font-size:22px;border-radius:14px;touch-action:none}
+#dp2 button.on,#bm2.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+#dp2 .u{grid-area:u}#dp2 .l{grid-area:l}#dp2 .r{grid-area:r}#dp2 .d{grid-area:d}
+#bm2{width:clamp(56px,16vw,70px);height:clamp(56px,16vw,70px);border-radius:50%;font-size:28px}
+@media (pointer:coarse){body.m2 #touch2{display:flex;justify-content:space-between;align-items:center;padding:4px 14px}body.m2 #dp{--k:clamp(40px,11vw,50px)}body.m2 #bm{width:clamp(56px,16vw,70px);height:clamp(56px,16vw,70px);font-size:28px}}

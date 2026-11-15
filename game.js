@@ -176,6 +176,14 @@ function decide(p){
  return opts.length?opts[Math.random()*opts.length|0]:-1;
 }
 
+function bossAttack(b){
+ const t=ps.find(q=>!q.ai&&q.alive);if(!t)return;
+ const [tx,ty]=lc(t),c=[];
+ for(let y=1;y<H-1;y++)for(let x=1;x<W-1;x++)if(grid[y][x]===0&&!bombAt(x,y)&&Math.abs(x-tx)+Math.abs(y-ty)<=3)c.push([x,y]);
+ c.sort(()=>Math.random()-.5);
+ c.slice(0,3+(b.sh<2?1:0)).forEach(([x,y])=>{bombs.push({x,y,t:1.6,r:2,o:b});spark(x,y,'#ff2e63',6,60)});
+ snd(80,.5,'sawtooth',.1,-40);shake=10;note(b.cx,b.cy,'BOSS ATTACK!','#ff5d73');
+}
 /* ---------- update ---------- */
 function tryMove(p,d,carry){
  p.dir=d;
@@ -199,6 +207,7 @@ function update(dt){
  for(const p of ps){
   if(!p.alive)continue;
   if(p.inv>0)p.inv-=dt;
+  if(p.boss&&p.alive){p.bt=(p.bt||0)+dt;if(p.bt>5.5-(3-Math.max(0,p.sh))*1.2){p.bt=0;bossAttack(p)}}
   if(p.mv){
    p.mv.t+=dt*p.spd;
    if(p.mv.t>=1){p.carry=p.mv.t-1;p.cx=p.mv.x;p.cy=p.mv.y;p.mv=null}
@@ -212,7 +221,7 @@ function update(dt){
  if(bombReq){bombReq=false;if(ps[0].alive)placeBomb(ps[0])}
  if(bombReq2){bombReq2=false;if(ps[1]&&!ps[1].ai&&ps[1].alive)placeBomb(ps[1])}
  for(const b of bombs){if(b.sl===undefined)continue;b.st+=dt;if(b.st>=.07){b.st=0;const nx=b.x+DIRS[b.sl][0],ny=b.y+DIRS[b.sl][1];if(canEnter(nx,ny)&&!ps.some(q=>q.alive&&lc(q)[0]===nx&&lc(q)[1]===ny)){b.x=nx;b.y=ny}else b.sl=undefined}}
- for(const b of bombs.slice()){b.t-=dt;if(b.t<=0)explode(b)}
+ for(const b of bombs.slice()){b.t-=dt;b.tk=(b.tk||0)-dt;if(b.t<1&&b.tk<=0){b.tk=.2;snd(1000,.04,'square',.02)}if(b.t<=0)explode(b)}
  flames=flames.filter(f=>(f.t-=dt)>0);
  for(const p of ps){
   if(!p.alive)continue;
@@ -232,7 +241,7 @@ function update(dt){
    if(it==='S')p.spd=Math.min(p.ai?5.2:6.4,p.spd+.5);
    if(it==='H')p.sh=Math.min(2,p.sh+1);
    if(it==='K')p.kick=true;
-   if(!p.ai){score+=20;snd(600,.15,'triangle',.06,500);note(x,y,'+20','#7dffb0');spark(x,y,'#fff',8,70)}
+   if(!p.ai){score+=20;snd({B:500,F:420,S:700,H:880,K:360}[it]||600,.15,'triangle',.06,500);note(x,y,'+20','#7dffb0');spark(x,y,'#fff',8,70)}
   }
  }
  if(time>STAGES[lvl].shr){shrinkT-=dt;if(shrinkT<=0){closeNext();shrinkT=.6}}
@@ -381,6 +390,7 @@ function finish(){
  if(score>best){best=score;try{localStorage.setItem('bomber-best',String(best))}catch(e){}}
  const last=lvl===NS-1,win=result==='win';
  if(!win&&!daily)lives--;
+ jingle(win?[523,659,784,1047]:[330,262,196]);
  if(win&&!last&&!daily){unlocked=Math.max(unlocked,lvl+2);try{localStorage.setItem('bomber-unlocked',String(unlocked))}catch(e){}}
  const t=daily&&win?'Daily cleared!':win?(last?'All stages cleared!':'Stage '+(lvl+1)+' cleared!'):result==='draw'?'Draw':'You were blown up';
  const s=win?'Score: '+score+'.':'Score: '+score+'. Keep an escape route from every bomb.';
@@ -409,8 +419,10 @@ $('pz').addEventListener('click',()=>state==='pause'?resume():pause());
 $('mu').addEventListener('click',e=>{muted=!muted;e.currentTarget.textContent=muted?'🔇':'🔊';music(!muted&&state==='play')});
 document.addEventListener('visibilitychange',()=>{if(document.hidden)pause()});
 
+function jingle(a){a.forEach((f,i)=>setTimeout(()=>snd(f,.2,'triangle',.06),i*130))}
+document.addEventListener('click',e=>{if(e.target.closest&&e.target.closest('button'))snd(520,.05,'square',.03)});
 /* 2 players (co-op) */
-$('p2').addEventListener('click',()=>{mode2=!mode2;$('p2').textContent='2 Players: '+(mode2?'On':'Off');init()});
+$('p2').addEventListener('click',()=>{mode2=!mode2;$('p2').textContent='2 Players: '+(mode2?'On':'Off');document.body.classList.toggle('m2',mode2);init()});
 /* online leaderboard: paste your Firebase Realtime Database URL here (no slash at end), e.g. https://xxxx-default-rtdb.firebaseio.com */
 const LB_URL='https://bomber-arena-default-rtdb.firebaseio.com';
 async function onlineSubmit(){
@@ -444,15 +456,19 @@ addEventListener('keyup',e=>{if(e.key in KEYS2){const i=held2.indexOf(KEYS2[e.ke
 addEventListener('blur',()=>{held=[];held2=[]});
 
 /* touch */
-document.querySelectorAll('#dp button').forEach(b=>{
+document.querySelectorAll('#dp button,#dp2 button').forEach(b=>{
+ const H=()=>b.parentElement.id==='dp2'?held2:held;
  const d=+b.dataset.d;
- const off=()=>{const i=held.indexOf(d);if(i>=0)held.splice(i,1);b.classList.remove('on')};
- b.addEventListener('pointerdown',e=>{e.preventDefault();try{b.setPointerCapture(e.pointerId)}catch(x){}if(!held.includes(d))held.push(d);b.classList.add('on')});
+ const off=()=>{const i=H().indexOf(d);if(i>=0)H().splice(i,1);b.classList.remove('on')};
+ b.addEventListener('pointerdown',e=>{e.preventDefault();try{b.setPointerCapture(e.pointerId)}catch(x){}if(!H().includes(d))H().push(d);b.classList.add('on')});
  b.addEventListener('pointerup',off);b.addEventListener('pointercancel',off);b.addEventListener('lostpointercapture',off);
 });
 const bm=$('bm');
 bm.addEventListener('pointerdown',e=>{e.preventDefault();bombReq=true;bm.classList.add('on')});
 ['pointerup','pointercancel','pointerleave'].forEach(n=>bm.addEventListener(n,()=>bm.classList.remove('on')));
+const bm2=$('bm2');
+bm2.addEventListener('pointerdown',e=>{e.preventDefault();bombReq2=true;bm2.classList.add('on')});
+['pointerup','pointercancel','pointerleave'].forEach(n=>bm2.addEventListener(n,()=>bm2.classList.remove('on')));
 addEventListener('contextmenu',e=>e.preventDefault());
 
 /* loop */

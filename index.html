@@ -11,6 +11,7 @@
 <meta property="og:title" content="Bomber Arena">
 <meta property="og:description" content="Free bomb arena game: 8 stages, daily challenge, shields, bots and a shrinking arena.">
 <link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="style.css">
 </head>
@@ -25,6 +26,10 @@
 <button id="pz" aria-label="Pause">❚❚</button>
 <button id="mu" aria-label="Sound on or off">🔊</button>
 </div>
+<div id="touch2">
+<div id="dp2"><button class="u" data-d="0" aria-label="P2 Up">▲</button><button class="l" data-d="3" aria-label="P2 Left">◀</button><button class="r" data-d="1" aria-label="P2 Right">▶</button><button class="d" data-d="2" aria-label="P2 Down">▼</button></div>
+<button id="bm2" aria-label="P2 bomb">💣</button>
+</div>
 <div id="stage">
 <canvas id="c"></canvas>
 <div id="ov"><div class="card">
@@ -36,7 +41,7 @@
 <button id="p2" class="sec">2 Players: Off</button>
 <button id="sh" class="sec" hidden>Share score</button>
 <button id="mn" class="sec" hidden>Main menu</button>
-<p class="tip" id="tp">Move: arrow keys or WASD. Bomb: Space. Pause: P. Power-ups: B bombs, F fire, S speed, H shield, K kick (walk into a bomb to push it). 2 Players (keyboard): P1 WASD + Space, P2 arrows + Enter.</p>
+<p class="tip" id="tp">Move: arrow keys or WASD. Bomb: Space. Pause: P. Power-ups: B bombs, F fire, S speed, H shield, K kick (walk into a bomb to push it). On phones, 2 Players shows a second control pad at the top for P2. 2 Players (keyboard): P1 WASD + Space, P2 arrows + Enter.</p>
 <p class="tip" id="lb"></p>
 </div></div>
 </div>
