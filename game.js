@@ -403,7 +403,7 @@ go.addEventListener('click',()=>{
  if(state==='over'&&daily)return begin(true);
  if(state==='over'&&result==='win'&&lvl<NS-1){lvl++;return begin(false)}
  if(state==='over'&&result==='win'){lvl=0;lives=3;return begin(true)}
- if(state==='over'){if(lives<=0){lives=3;return begin(true)}score=base;return begin(false)}
+ if(state==='over'){if(lives<=0){lives=3;lvl=0;return begin(true)}score=base;return begin(false)}
  daily=false;lives=3;lvl=Math.min(lvl,unlocked-1);begin(true);
 });
 $('dl').addEventListener('click',()=>{if(!daily)prevLvl=lvl;daily=true;lvl=4;begin(true)});
