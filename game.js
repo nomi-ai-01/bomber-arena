@@ -459,11 +459,13 @@ addEventListener('contextmenu',e=>e.preventDefault());
 let last=performance.now();
 function loop(now){
  const dt=Math.min(.05,(now-last)/1000);last=now;
- an+=dt;
- if(state==='play')update(dt);
- else if(state==='over'){flames=flames.filter(f=>(f.t-=dt)>0)}
- if(state!=='pause')fx(dt);
- draw();setHud();
+ try{
+  an+=dt;
+  if(state==='play')update(dt);
+  else if(state==='over'){flames=flames.filter(f=>(f.t-=dt)>0)}
+  if(state!=='pause')fx(dt);
+  draw();setHud();
+ }catch(e){if(!loop.er){loop.er=1;window.__err&&window.__err(e.message+' | '+String(e.stack).split('\n')[1])}}
  requestAnimationFrame(loop);
 }
 init();buildStg();buildSkn();$('os').textContent=desc();$('lb').textContent=lbText();resize();
