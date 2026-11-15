@@ -370,7 +370,7 @@ function setHud(){
 }
 function showOv(title,sub,btn,share){
  $('ot').textContent=title;$('os').textContent=sub;go.textContent=btn;sh.hidden=!share;sh.textContent='Share score';
- $('tp').hidden=state==='over';$('pk').hidden=state!=='menu';$('dl').hidden=state!=='menu';$('p2').hidden=state!=='menu';$('mn').hidden=state==='menu';$('lb').textContent=lbText();ov.hidden=false;
+ $('tp').hidden=state==='over';$('pk').hidden=state!=='menu';$('dl').hidden=state!=='menu';$('p2').hidden=state!=='menu';$('ins').hidden=state!=='menu'||isApp;$('mn').hidden=state==='menu';$('lb').textContent=lbText();ov.hidden=false;
  $('ov').querySelector('.card').scrollTop=0;
 }
 function mul(a){return()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
@@ -421,6 +421,15 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden)pause()});
 
 function jingle(a){a.forEach((f,i)=>setTimeout(()=>snd(f,.2,'triangle',.06),i*130))}
 document.addEventListener('click',e=>{if(e.target.closest&&e.target.closest('button'))snd(520,.05,'square',.03)});
+const fsb=$('fs');if(!document.documentElement.requestFullscreen)fsb.hidden=true;
+fsb.addEventListener('click',()=>{try{if(document.fullscreenElement)document.exitFullscreen();else document.documentElement.requestFullscreen()}catch(e){}});
+document.addEventListener('fullscreenchange',()=>setTimeout(resize,200));
+const isApp=(window.matchMedia&&matchMedia('(display-mode: standalone)').matches)||navigator.standalone;
+let dip=null;
+addEventListener('beforeinstallprompt',e=>{e.preventDefault();dip=e});
+addEventListener('appinstalled',()=>{$('ins').hidden=true});
+$('ins').addEventListener('click',async()=>{if(dip){dip.prompt();try{await dip.userChoice}catch(x){}dip=null}else alert('Install: Chrome menu (3 dots) > Install app / Add to Home screen. iPhone: Safari Share > Add to Home Screen.')});
+if(isApp)$('ins').hidden=true;
 /* 2 players (co-op) */
 $('p2').addEventListener('click',()=>{mode2=!mode2;$('p2').textContent='2 Players: '+(mode2?'On':'Off');document.body.classList.toggle('m2',mode2);init()});
 /* online leaderboard: paste your Firebase Realtime Database URL here (no slash at end), e.g. https://xxxx-default-rtdb.firebaseio.com */

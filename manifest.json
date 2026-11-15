@@ -37,5 +37,9 @@
    "sizes": "any",
    "type": "image/svg+xml"
   }
+ ],
+ "display_override": [
+  "fullscreen",
+  "standalone"
  ]
 }
