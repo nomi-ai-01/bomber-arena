@@ -396,7 +396,7 @@ function finish(){
  const s=win?'Score: '+score+'.':'Score: '+score+'. Keep an escape route from every bomb.';
  const dead=!win&&!daily&&lives<=0;
  showOv(dead?'Game over':t,s+' Best: '+best+'.'+(!win&&!daily&&!dead?' Lives left: '+lives+'.':''),daily?'Play daily again':win?(last?'Play again':'Next stage'):dead?'New game':'Retry stage',true);
- onlineSubmit().then(onlineTop);
+((dead||(win&&last))?onlineSubmit():Promise.resolve()).then(onlineTop);
 }
 go.addEventListener('click',()=>{
  if(state==='pause')return resume();
