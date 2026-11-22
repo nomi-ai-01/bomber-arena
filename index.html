@@ -40,6 +40,13 @@
 <button id="go">Play</button>
 <button id="dl" class="sec">Daily challenge</button>
 <button id="p2" class="sec">2 Players: Off</button>
+<button id="cf" class="sec">⚙ Settings</button>
+<div id="cfp" hidden>
+<label>Music <input id="cm" type="range" min="0" max="1" step=".1"></label>
+<label>Sound <input id="cs" type="range" min="0" max="1" step=".1"></label>
+<label>Controls size <input id="cz" type="range" min=".8" max="1.4" step=".1"></label>
+<button id="cv" class="sec"></button><button id="cl" class="sec"></button><button id="cd" class="sec"></button>
+</div>  
 <button id="ins" class="sec">📲 Install app</button>
 <button id="sh" class="sec" hidden>Share score</button>
 <button id="mn" class="sec" hidden>Main menu</button>
@@ -53,7 +60,7 @@
 </div>
 <script>
 window.__err=function(m){var d=document.createElement('div');d.style.cssText='position:fixed;left:0;right:0;top:0;z-index:99;background:#b00;color:#fff;padding:8px;font:12px monospace;word-break:break-all';d.textContent='Error: '+m;document.body.appendChild(d)};
-window.addEventListener('error',function(e){
+window.addEventListener('error',function(e){var f=String(e.filename||''),m=String(e.message||'');if(!f||/javascriptbridge|webview/i.test(m))return;window.__err(m+' ('+f.split('/').pop()+':'+e.lineno+')')});
   var f=String(e.filename||''),m=String(e.message||'');
   if(!f||/javascriptbridge|webview/i.test(m))return;
   window.__err(m+' ('+f.split('/').pop()+':'+e.lineno+')')
