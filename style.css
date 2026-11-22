@@ -14,23 +14,22 @@ body{height:100%;margin:0;background:var(--bg);color:var(--text);font-family:"Tr
 #c{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);border-radius:12px;box-shadow:0 6px 30px rgba(0,0,0,.35)}
 #ov{position:fixed;z-index:50;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(10,14,28,.62);padding:16px}
 #ov[hidden]{display:none}
-.card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:22px;max-width:380px;width:100%;text-align:center;max-height:100%;overflow:auto;touch-action:pan-y;overscroll-behavior:contain}
-.card h1{margin:0 0 6px;font-size:clamp(26px,7vw,34px)}
-.card p{margin:6px 0 14px;color:var(--muted);line-height:1.45;font-size:15px}
-.card button{display:block;width:100%;margin-top:10px;padding:16px;min-height:56px;border-radius:14px;font:inherit;font-weight:700;font-size:20px;cursor:pointer;border:2px solid var(--accent);background:var(--accent);color:#fff;touch-action:manipulation}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px;max-width:420px;width:100%;text-align:center;max-height:100%;overflow:auto;touch-action:pan-y;overscroll-behavior:contain}
+.card h1{margin:0 0 6px;font-size:clamp(24px,7vw,30px)}
+.card p{margin:4px 0 8px;color:var(--muted);line-height:1.45;font-size:14px}
+.card button{display:block;width:100%;margin-top:8px;padding:10px;min-height:46px;border-radius:14px;font:inherit;font-weight:700;font-size:18px;cursor:pointer;border:2px solid var(--accent);background:var(--accent);color:#fff;touch-action:manipulation}
 .card button.sec{background:transparent;color:var(--text);border-color:var(--line)}
 .card button[hidden]{display:none}
-#stg{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:4px 0 6px}
+#stg{display:flex;flex-wrap:wrap;gap:5px;justify-content:center;margin:4px 0 6px}
 #stg[hidden]{display:none}
-#stg button{margin:0;width:44px;height:44px;min-height:0;padding:0;font-size:18px;background:transparent;color:var(--text);border-color:var(--line)}
+#stg button{margin:0;width:40px;height:40px;min-height:0;padding:0;font-size:16px;background:transparent;color:var(--text);border-color:var(--line)}
 #stg button.sel{background:var(--accent);color:#fff;border-color:var(--accent)}
 #stg button:disabled{opacity:.35;cursor:not-allowed}
 #skn{display:flex;gap:12px;justify-content:center;margin:6px 0}
-#skn button{margin:0;width:50px;height:50px;min-height:0;padding:0;border-radius:50%;border:3px solid var(--line)}
+#skn button{margin:0;width:42px;height:42px;min-height:0;padding:0;border-radius:50%;border:3px solid var(--line)}
 #skn button.sel{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent)}
 .card .cl{margin:8px 0 2px;font-size:13px}
-.card .tip{font-size:13px;margin:14px 0 0}
-@media (max-height:820px){.card{padding:16px}.card p{margin:4px 0 10px}.card button{padding:10px;min-height:48px;font-size:18px}}
+.card .tip{margin:8px 0 0;font-size:12px}
 @media (pointer:coarse){#tp{display:none}}
 button:focus-visible{outline:3px solid #ffbf3d;outline-offset:2px}
 #touch{display:none;justify-content:space-between;align-items:center;padding:8px 18px 12px}
@@ -41,7 +40,6 @@ button:focus-visible{outline:3px solid #ffbf3d;outline-offset:2px}
 #dp button:active,#bm:active,#dp button.on,#bm.on{background:var(--accent);color:#fff;border-color:var(--accent)}
 #dp .u{grid-area:u}#dp .l{grid-area:l}#dp .r{grid-area:r}#dp .d{grid-area:d}
 #bm{width:clamp(92px,27vw,116px);height:clamp(92px,27vw,116px);border-radius:50%;font-size:46px}
-
 #touch2{display:none}
 #dp2{--k:clamp(40px,11vw,50px);display:grid;grid-template-columns:repeat(3,var(--k));grid-template-rows:repeat(3,var(--k));grid-template-areas:". u ." "l . r" ". d ."}
 #dp2 button,#bm2{border:2px solid var(--line);background:var(--panel);color:var(--text);font-size:22px;border-radius:14px;touch-action:none}
@@ -49,18 +47,11 @@ button:focus-visible{outline:3px solid #ffbf3d;outline-offset:2px}
 #dp2 .u{grid-area:u}#dp2 .l{grid-area:l}#dp2 .r{grid-area:r}#dp2 .d{grid-area:d}
 #bm2{width:clamp(56px,16vw,70px);height:clamp(56px,16vw,70px);border-radius:50%;font-size:28px}
 @media (pointer:coarse){body.m2 #touch2{display:flex;justify-content:space-between;align-items:center;padding:4px 14px}body.m2 #dp{--k:clamp(40px,11vw,50px)}body.m2 #bm{width:clamp(56px,16vw,70px);height:clamp(56px,16vw,70px);font-size:28px}}
-
-.card{padding:14px;max-width:420px}
-.card h1{font-size:clamp(24px,7vw,30px)}
-.card p{margin:4px 0 8px;font-size:14px}
-.card button{padding:10px;min-height:46px;font-size:18px;margin-top:8px}
-.card .tip{margin:8px 0 0;font-size:12px}
-#stg{gap:5px}
+@media (max-width:420px){#hud{gap:6px;padding:6px 8px}#hud button{width:38px;height:38px;font-size:16px}}
+/* settings */
 #cfp{margin-top:6px}
+#cfp[hidden]{display:none}
 #cfp label{display:flex;justify-content:space-between;align-items:center;font-size:14px;margin:6px 0;color:var(--muted)}
 #cfp input[type=range]{width:55%}
 #touch{zoom:var(--ps,1)}
 body.lh #touch{flex-direction:row-reverse}
-#stg button{width:40px;height:40px;font-size:16px}
-#skn button{width:42px;height:42px}
-@media (max-width:420px){#hud{gap:6px;padding:6px 8px}#hud button{width:38px;height:38px;font-size:16px}}
