@@ -33,28 +33,21 @@
 </div>
 <div id="stage">
 <canvas id="c"></canvas>
-<div id="ov"><div class="card">
-<h1 id="ot">Bomber Arena</h1>
-<p id="os"></p>
+<div id="ov" hidden><div class="card"><h1 id="ot">Bomber Arena</h1><p id="os"></p>
 <div id="pk"><p class="cl">Pick your character, then a stage</p><div id="skn"></div><div id="stg"></div></div>
-<button id="go">Play</button>
-<button id="dl" class="sec">Daily challenge</button>
-<button id="p2" class="sec">2 Players: Off</button>
-<button id="cf" class="sec">⚙ Settings</button>
+<button id="go">Play</button><button id="sh" class="sec" hidden>Share score</button><button id="mn" class="sec">🏠 Home</button>
+<p class="tip" id="lb"></p></div></div>
+<div id="home" class="ovl"><div class="card"><div class="logo">💣</div><h1>Bomber Arena</h1><p id="hs"></p>
+<button id="hp">▶ Play</button><button id="dl" class="sec">📅 Daily challenge</button><button id="p2" class="sec">👥 2 Players: Off</button>
+<button id="hsh" class="sec">🛒 Shop</button><button id="hst" class="sec">⚙ Settings</button><button id="hhp" class="sec">❓ How to play</button>
+<button id="ins" class="sec">📲 Install app</button><p class="tip" id="hlb"></p></div></div>
+<div id="pn" class="ovl" hidden><div class="card"><h1 id="pt"></h1><div id="pb"></div>
 <div id="cfp" hidden>
 <label>Music <input id="cm" type="range" min="0" max="1" step=".1"></label>
 <label>Sound <input id="cs" type="range" min="0" max="1" step=".1"></label>
 <label>Controls size <input id="cz" type="range" min=".8" max="1.4" step=".1"></label>
-<button id="cv" class="sec"></button>
-<button id="cl" class="sec"></button>
-<button id="cd" class="sec"></button>
-</div>
-<button id="ins" class="sec">📲 Install app</button>
-<button id="sh" class="sec" hidden>Share score</button>
-<button id="mn" class="sec" hidden>Main menu</button>
-<p class="tip" id="tp">Move: arrow keys or WASD. Bomb: Space. Pause: P. Power-ups: B bombs, F fire, S speed, H shield, K kick (walk into a bomb to push it). On phones, 2 Players shows a second control pad at the top for P2. 2 Players (keyboard): P1 WASD + Space, P2 arrows + Enter. Gamepad: stick or D-pad, A = bomb.</p>
-<p class="tip" id="lb"></p>
-</div></div>
+<button id="cv" class="sec"></button><button id="cl" class="sec"></button><button id="cd" class="sec"></button>
+</div><button id="pback">← Back</button></div></div>
 </div>
 <div id="touch">
 <div id="dp"><button class="u" data-d="0" aria-label="Up">▲</button><button class="l" data-d="3" aria-label="Left">◀</button><button class="r" data-d="1" aria-label="Right">▶</button><button class="d" data-d="2" aria-label="Down">▼</button></div>
