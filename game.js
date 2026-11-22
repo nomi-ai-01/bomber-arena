@@ -5,13 +5,16 @@ const COLS=['#3da5ff','#ff5d73','#44d17a','#ffc83d'];
 const SP=[[1,1],[W-2,1],[1,H-2],[W-2,H-2]];
 const STAGES=[{n:'Warm-up',bots:1,spd:2.8,dens:.6,shr:55,th:0},{n:'Brick yard',bots:2,spd:3.2,dens:.72,shr:45,th:0},{n:'Triple threat',bots:3,spd:3.4,dens:.74,shr:40,th:1},{n:'Fast bots',bots:3,spd:4,dens:.78,shr:32,th:1},{n:'Ice rush',bots:3,spd:4.2,dens:.7,shr:30,th:2},{n:'Dense maze',bots:3,spd:4.4,dens:.86,shr:28,th:2},{n:'Speed storm',bots:3,spd:4.8,dens:.78,shr:24,th:3},{n:'Elite arena',bots:3,spd:5,dens:.8,shr:20,th:3},{n:'Frost maze',bots:3,spd:5,dens:.84,shr:22,th:2},{n:'Jungle hunt',bots:3,spd:5.1,dens:.76,shr:20,th:1},{n:'Lava storm',bots:3,spd:5.3,dens:.8,shr:18,th:3},{n:'Boss: Champion',boss:1,bots:3,spd:5.6,dens:.82,shr:16,th:3}];
 const TH=[['#2b3654','#26304c','#5d6a8f','#7f8db5','#c4673a'],['#2f3a2c','#293425','#5f7a56','#86a77a','#b8803a'],['#26405a','#223a52','#5f8fb0','#9fd0ee','#8fb4c8'],['#40262f','#3a2229','#8f5a66','#c27f8d','#d2512f']];
-const SKINS=['#3da5ff','#b46cff','#ff8fd1','#f2f4ff'];
+const SKINS=['#3da5ff','#b46cff','#ff8fd1','#f2f4ff','#ffc83d','#44d17a','#ff5d73','#222a44'],PRICE=[0,0,0,0,80,120,160,250];
 const NS=STAGES.length;
 let mode2=false,lives=3,held2=[],bombReq2=false,combo=0,lastK=-9,lvl=0,unlocked=1,base=0,rng=Math.random,daily=false,skin=0,prevLvl=0;
 const $=id=>document.getElementById(id);
 const cv=$('c'),ctx=cv.getContext('2d'),stage=$('stage');
 let grid,items,bombs,flames,ps,parts=[],txts=[],shake=0,state='menu',time=0,an=0,score=0,best=0,endT=0,result='',shrinkList=[],shrinkIdx=0,shrinkT=0,held=[],muted=false,bombReq=false;
-try{best=+localStorage.getItem('bomber-best')||0;unlocked=Math.min(NS,Math.max(1,+localStorage.getItem('bomber-unlocked')||1));skin=Math.min(3,+localStorage.getItem('bomber-skin')||0)}catch(e){}
+try{best=+localStorage.getItem('bomber-best')||0;unlocked=Math.min(NS,Math.max(1,+localStorage.getItem('bomber-unlocked')||1));skin=Math.min(7,+localStorage.getItem('bomber-skin')||0)}catch(e){}
+let coins=0,own=[0,1,2,3],streak=1;
+try{coins=+localStorage.getItem('bomber-coins')||0;own=JSON.parse(localStorage.getItem('bomber-own')||'[0,1,2,3]');if(!own.includes(skin))skin=0}catch(e){}
+const saveEco=()=>{try{localStorage.setItem('bomber-coins',String(coins));localStorage.setItem('bomber-own',JSON.stringify(own));localStorage.setItem('bomber-skin',String(skin))}catch(e){}};
 /* settings */
 let cfg={mus:.7,sfx:1,vib:1,diff:1,pad:1,left:0};
 try{Object.assign(cfg,JSON.parse(localStorage.getItem('bomber-cfg')||'{}'))}catch(e){}
@@ -34,6 +37,17 @@ function snd(f,d,type,v,slide,m){
  }catch(e){}
 }
 
+function noise(d,v,fq,m,sweep){
+ if(muted)return;const k=m?cfg.mus:cfg.sfx;if(!k)return;
+ try{ac=ac||new(window.AudioContext||window.webkitAudioContext)();if(ac.state==='suspended')ac.resume();
+ const n=Math.floor(ac.sampleRate*d),b=ac.createBuffer(1,n,ac.sampleRate),a=b.getChannelData(0);
+ for(let i=0;i<n;i++)a[i]=Math.random()*2-1;
+ const s=ac.createBufferSource(),f=ac.createBiquadFilter(),g=ac.createGain(),t=ac.currentTime;
+ s.buffer=b;f.type='lowpass';f.frequency.setValueAtTime(fq,t);f.frequency.exponentialRampToValueAtTime(Math.max(60,sweep||fq),t+d);
+ g.gain.setValueAtTime(Math.max(.0011,v*k),t);g.gain.exponentialRampToValueAtTime(.001,t+d);
+ s.connect(f);f.connect(g);g.connect(ac.destination);s.start()}catch(e){}
+}
+const boom=()=>{noise(.7,.55,2600,0,80);snd(70,.5,'sine',.3,-40)};
 /* ---------- sizing ---------- */
 function resize(){
  const r=stage.getBoundingClientRect();
@@ -104,13 +118,13 @@ function placeBomb(p){
  const [x,y]=lc(p);
  if(!p.alive||ownCount(p)>=p.maxB||bombAt(x,y))return false;
  bombs.push({x,y,t:2.3,r:p.range,o:p});
- snd(220,.12,'square',.05,-90);
+ snd(220,.12,'square',.05,-90);noise(.15,.07,6000,0,2000);
  return true;
 }
 function explode(b){
  const i=bombs.indexOf(b);if(i<0)return;
  bombs.splice(i,1);
- snd(130,.4,'sawtooth',.09,-90);vib(20);shake=Math.max(shake,5);
+ boom();vib(20);shake=Math.max(shake,5);
  for(const [x,y] of cellsOf(b.x,b.y,b.r)){
   flames.push({x,y,t:.45,o:b.o});
   items[y][x]=null;spark(x,y,'#ffb43d',5,110);
@@ -126,7 +140,7 @@ function explode(b){
 }
 function kill(p,by){
  if(!p.alive)return;
- p.alive=false;if(!p.ai)vib([120,50,160]);snd(300,.5,'sawtooth',.07,-220);shake=8;
+ p.alive=false;if(!p.ai)vib([120,50,160]);snd(300,.5,'sawtooth',.07,-220);noise(.45,.25,1800,0,150);shake=8;
  spark(p.cx,p.cy,p.col,22,150);
  if(by&&by!==p&&!by.ai){if(p.boss){score+=500;note(p.cx,p.cy,'BOSS +500','#ffd23d')}const c=time-lastK<4?++combo:(combo=1);lastK=time;const v=100*c;score+=v;note(p.cx,p.cy,'+'+v+(c>1?' combo x'+c:''),'#ff8f8f')}
 }
@@ -244,7 +258,7 @@ function update(dt){
    if(it==='S')p.spd=Math.min(p.ai?5.2:6.4,p.spd+.5);
    if(it==='H')p.sh=Math.min(2,p.sh+1);
    if(it==='K')p.kick=true;
-   if(!p.ai){score+=20;vib(15);snd({B:500,F:420,S:700,H:880,K:360}[it]||600,.15,'triangle',.06,500);note(x,y,'+20','#7dffb0');spark(x,y,'#fff',8,70)}
+   if(!p.ai){score+=20;vib(15);[1,1.25,1.5].forEach((m,i)=>setTimeout(()=>snd(520*m,.1,'triangle',.06),i*60));note(x,y,'+20','#7dffb0');spark(x,y,'#fff',8,70)}
   }
  }
  if(time>STAGES[lvl].shr){shrinkT-=dt;if(shrinkT<=0){closeNext();shrinkT=.6}}
@@ -294,7 +308,7 @@ function drawP(p){
   ctx.fillStyle='#111';ctx.beginPath();ctx.arc(px+s+dx*1.6,py-5-bob+dy*1.4,2.2,0,7);ctx.fill();
  }
  if(!p.ai){
-  const a=skin,ty=py-20-bob;ctx.fillStyle='#222';ctx.strokeStyle='#222';ctx.lineWidth=2;
+  const a=skin%4,ty=py-20-bob;ctx.fillStyle='#222';ctx.strokeStyle='#222';ctx.lineWidth=2;
   if(a===0){ctx.beginPath();ctx.moveTo(px,ty);ctx.lineTo(px,ty-9);ctx.stroke();ctx.fillStyle='#ff5a2e';ctx.beginPath();ctx.arc(px,ty-11,3.5,0,7);ctx.fill()}
   else if(a===1){ctx.fillStyle=p.col;for(const s of[-1,1]){ctx.beginPath();ctx.moveTo(px+s*14,ty+3);ctx.lineTo(px+s*13,ty-9);ctx.lineTo(px+s*4,ty);ctx.closePath();ctx.fill();ctx.stroke()}}
   else if(a===2){ctx.fillStyle='#ffd23d';ctx.beginPath();ctx.moveTo(px-10,ty+2);ctx.lineTo(px-10,ty-8);ctx.lineTo(px-5,ty-3);ctx.lineTo(px,ty-10);ctx.lineTo(px+5,ty-3);ctx.lineTo(px+10,ty-8);ctx.lineTo(px+10,ty+2);ctx.closePath();ctx.fill();ctx.stroke()}
@@ -373,13 +387,13 @@ function setHud(){
 }
 function showOv(title,sub,btn,share){
  $('ot').textContent=title;$('os').textContent=sub;go.textContent=btn;sh.hidden=!share;sh.textContent='Share score';
- $('tp').hidden=state==='over';$('pk').hidden=state!=='menu';$('dl').hidden=state!=='menu';$('p2').hidden=state!=='menu';$('ins').hidden=state!=='menu'||isApp;$('mn').hidden=state==='menu';$('lb').textContent=lbText();ov.hidden=false;
+ $('pk').hidden=state!=='menu';$('lb').textContent=lbText();ov.hidden=false;
  $('ov').querySelector('.card').scrollTop=0;
 }
 function mul(a){return()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
 function dayKey(){const d=new Date();return d.getFullYear()*10000+(d.getMonth()+1)*100+d.getDate()}
 function lbText(){let a=[],d=0;try{a=JSON.parse(localStorage.getItem('bomber-lb')||'[]');d=+localStorage.getItem('bomber-d'+dayKey())||0}catch(e){}const t=a.length?'Top scores: '+a.map(x=>x.s).join(', ')+'.':'';return t+(d?(t?' ':'')+'Daily best today: '+d+'.':'')}
-function buildSkn(){const e=$('skn');e.innerHTML='';SKINS.forEach((s,i)=>{const b=document.createElement('button');b.style.background=s;b.className=i===skin?'sel':'';b.setAttribute('aria-label','Character '+(i+1));b.onclick=()=>{skin=i;try{localStorage.setItem('bomber-skin',String(i))}catch(x){}init();buildSkn()};e.appendChild(b)})}
+function buildSkn(){const e=$('skn');e.innerHTML='';own.forEach(i=>{const s=SKINS[i],b=document.createElement('button');b.style.background=s;b.className=i===skin?'sel':'';b.setAttribute('aria-label','Character '+(i+1));b.onclick=()=>{skin=i;saveEco();init();buildSkn()};e.appendChild(b)})}
 
 /* music: bass + lead + hi-hat + kick */
 let mt=null,mstep=0;
@@ -393,9 +407,10 @@ function music(on){
   if(s%2===0&&b)snd(b,.3,'triangle',.05,0,1);
   if(s%4===2)snd(4000,.03,'square',.012,-1500,1);
   if(s%8===0)snd(90,.12,'sine',.07,-50,1);
+  if(s%8===4)noise(.08,.07,5000,1,1500);
  },200);
 }
-function begin(newRun){if(newRun)score=0;base=score;rng=daily?mul(dayKey()*10+lvl):Math.random;init();held=[];held2=[];state='play';ov.hidden=true;go.blur();snd(440,.15,'triangle',.05,200);music(true)}
+function begin(newRun){if(newRun)score=0;base=score;rng=daily?mul(dayKey()*10+lvl):Math.random;init();held=[];held2=[];state='play';ov.hidden=true;$('home').hidden=true;go.blur();snd(440,.15,'triangle',.05,200);music(true)}
 function desc(){const s=STAGES[lvl];return 'Stage '+(lvl+1)+': '+s.n+'. Beat '+s.bots+(s.bots>1?' bots':' bot')+' before the arena starts shrinking at '+s.shr+' seconds.'}
 function buildStg(){const e=$('stg');e.innerHTML='';STAGES.forEach((s,i)=>{const b=document.createElement('button');b.textContent=i+1;b.disabled=i>=unlocked;b.title=s.n;b.className=i===lvl?'sel':'';b.onclick=()=>{lvl=i;buildStg();$('os').textContent=desc();init()};e.appendChild(b)})}
 function pause(){if(state!=='play')return;state='pause';held=[];music(false);showOv('Paused','Take a break. Your game is waiting.','Resume',false)}
@@ -405,13 +420,14 @@ function finish(){
  try{if(score>0){const a=JSON.parse(localStorage.getItem('bomber-lb')||'[]');a.push({s:score});a.sort((x,y)=>y.s-x.s);localStorage.setItem('bomber-lb',JSON.stringify(a.slice(0,5)));if(daily){const k='bomber-d'+dayKey();if(score>(+localStorage.getItem(k)||0))localStorage.setItem(k,String(score))}}}catch(e){}
  if(score>best){best=score;try{localStorage.setItem('bomber-best',String(best))}catch(e){}}
  const last=lvl===NS-1,win=result==='win';
+ const gain=Math.floor(Math.max(0,score-base)/10)+(win?20:0);coins+=gain;saveEco();
  if(!win&&!daily)lives--;
  jingle(win?[523,659,784,1047]:[330,262,196]);
  if(win&&!last&&!daily){unlocked=Math.max(unlocked,lvl+2);try{localStorage.setItem('bomber-unlocked',String(unlocked))}catch(e){}}
  const t=daily&&win?'Daily cleared!':win?(last?'All stages cleared!':'Stage '+(lvl+1)+' cleared!'):result==='draw'?'Draw':'You were blown up';
  const s=win?'Score: '+score+'.':'Score: '+score+'. Keep an escape route from every bomb.';
  const dead=!win&&!daily&&lives<=0;
- showOv(dead?'Game over':t,s+' Best: '+best+'.'+(!win&&!daily&&!dead?' Lives left: '+lives+'.':''),daily?'Play daily again':win?(last?'Play again':'Next stage'):dead?'New game':'Retry stage',true);
+ showOv(dead?'Game over':t,s+' Best: '+best+'. +'+gain+' coins.'+(!win&&!daily&&!dead?' Lives left: '+lives+'.':''),daily?'Play daily again':win?(last?'Play again':'Next stage'):dead?'New game':'Retry stage',true);
  ((dead||(win&&last))?onlineSubmit():Promise.resolve()).then(onlineTop);
 }
 go.addEventListener('click',()=>{
@@ -423,7 +439,7 @@ go.addEventListener('click',()=>{
  daily=false;lives=3;lvl=Math.min(lvl,unlocked-1);begin(true);
 });
 $('dl').addEventListener('click',()=>{if(!daily)prevLvl=lvl;daily=true;lvl=4;begin(true)});
-$('mn').addEventListener('click',()=>{if(daily){daily=false;lvl=Math.min(prevLvl,unlocked-1)}state='menu';held=[];music(false);init();buildStg();buildSkn();showOv('Bomber Arena',desc(),'Play',false)});
+$('mn').addEventListener('click',()=>{if(daily){daily=false;lvl=Math.min(prevLvl,unlocked-1)}held=[];music(false);init();goHome()});
 sh.addEventListener('click',async()=>{
  const text='I scored '+score+' in Bomber Arena! Can you beat me? '+location.href;
  try{
@@ -470,6 +486,7 @@ addEventListener('keydown',e=>{
  if(e.key===' '||e.key==='Enter'){
   e.preventDefault();
   if(state==='menu'||state==='over')go.click();
+  else if(state==='home')$('hp').click();
   else if(state==='pause')resume();
   else bombReq=true;
   return;
@@ -517,7 +534,7 @@ function cfgUi(){
  $('touch').style.setProperty('--ps',cfg.pad);
 }
 try{
- $('cf').onclick=()=>{$('cfp').hidden=!$('cfp').hidden;cfgUi()};
+ 
  $('cm').oninput=e=>{cfg.mus=+e.target.value;saveCfg()};
  $('cs').oninput=e=>{cfg.sfx=+e.target.value;saveCfg()};
  $('cz').oninput=e=>{cfg.pad=+e.target.value;saveCfg();cfgUi()};
@@ -527,6 +544,24 @@ try{
  cfgUi();
 }catch(e){console.log('settings error',e)}
 
+/* home, shop, help */
+function updHome(){$('hs').textContent='🪙 '+coins+'    🔥 Day streak: '+streak;$('hlb').textContent=lbText()}
+function goHome(){state='home';ov.hidden=true;$('pn').hidden=true;$('home').hidden=false;music(false);updHome()}
+function showPn(t){$('pt').textContent=t;$('home').hidden=true;$('pn').hidden=false}
+function openShop(){
+ const b=$('pb');b.innerHTML='';$('cfp').hidden=true;
+ SKINS.forEach((c,i)=>{const o=own.includes(i),el=document.createElement('button');el.className='sec sk'+(i===skin?' sel':'');
+  el.innerHTML='<i style="background:'+c+'"></i> '+(o?(i===skin?'Selected':'Use'):'Buy  🪙 '+PRICE[i]);
+  el.onclick=()=>{if(o)skin=i;else if(coins>=PRICE[i]){coins-=PRICE[i];own.push(i);skin=i}else{el.textContent='Not enough coins';return}saveEco();init();openShop()};
+  b.appendChild(el)});
+ showPn('Shop  🪙 '+coins);
+}
+$('hp').onclick=()=>{$('home').hidden=true;state='menu';buildStg();buildSkn();showOv('Bomber Arena',desc(),'Play',false)};
+$('hsh').onclick=openShop;
+$('hst').onclick=()=>{$('pb').innerHTML='';$('cfp').hidden=false;cfgUi();showPn('Settings')};
+$('hhp').onclick=()=>{$('cfp').hidden=true;$('pb').innerHTML='<p><b>1 Player:</b> Move with arrows or WASD, bomb with Space. Blow up bricks, collect power-ups, beat the bots before the arena shrinks.</p><p><b>2 Players (PC):</b> press "2 Players" on Home first. P1: WASD + Space. P2: arrow keys + Enter. Both fight the bots together.</p><p><b>2 Players (phone):</b> P1 pad at the bottom, P2 pad at the top.</p><p><b>Gamepad:</b> stick or D-pad + A button.</p><p><b>Items:</b> B more bombs, F longer fire, S speed, H shield, K kick bombs.</p>';showPn('How to play')};
+$('pback').onclick=()=>{$('pn').hidden=true;$('home').hidden=false;updHome()};
+try{const dk=dayKey();let st=JSON.parse(localStorage.getItem('bomber-streak')||'{}');if(st.d!==dk){const y=new Date(Date.now()-864e5),yk=y.getFullYear()*10000+(y.getMonth()+1)*100+y.getDate();st={d:dk,n:st.d===yk?(st.n||0)+1:1};coins+=10*Math.min(st.n,7);saveEco();localStorage.setItem('bomber-streak',JSON.stringify(st))}streak=st.n||1}catch(e){}
 /* loop */
 let last=performance.now();
 function loop(now){
@@ -541,7 +576,7 @@ function loop(now){
  }catch(e){if(!loop.er){loop.er=1;window.__err&&window.__err(e.message+' | '+String(e.stack).split('\n')[1])}}
  requestAnimationFrame(loop);
 }
-init();buildStg();buildSkn();$('os').textContent=desc();$('lb').textContent=lbText();resize();
+init();buildStg();buildSkn();$('os').textContent=desc();$('lb').textContent=lbText();resize();goHome();
 requestAnimationFrame(loop);
 new ResizeObserver(resize).observe(stage);
 if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});

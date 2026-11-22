@@ -55,3 +55,12 @@ button:focus-visible{outline:3px solid #ffbf3d;outline-offset:2px}
 #cfp input[type=range]{width:55%}
 #touch{zoom:var(--ps,1)}
 body.lh #touch{flex-direction:row-reverse}
+
+.ovl{position:fixed;z-index:50;inset:0;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at 50% 30%,#2a3566,#0b0f1e);padding:16px}
+.ovl[hidden]{display:none}
+.logo{font-size:64px;animation:bob 1.6s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(-8px) scale(1.08)}}
+#pb p{text-align:left;font-size:14px;color:var(--text)}
+#pb button.sk{display:flex;align-items:center;gap:12px;justify-content:center}
+#pb button.sk i{width:26px;height:26px;border-radius:50%;border:2px solid #fff;display:inline-block}
+#pb button.sk.sel{border-color:var(--accent)}
