@@ -53,7 +53,11 @@
 </div>
 <script>
 window.__err=function(m){var d=document.createElement('div');d.style.cssText='position:fixed;left:0;right:0;top:0;z-index:99;background:#b00;color:#fff;padding:8px;font:12px monospace;word-break:break-all';d.textContent='Error: '+m;document.body.appendChild(d)};
-window.addEventListener('error',function(e){window.__err((e.message||'')+' ('+String(e.filename||'').split('/').pop()+':'+e.lineno+')')});
+window.addEventListener('error',function(e){
+  var f=String(e.filename||''),m=String(e.message||'');
+  if(!f||/javascriptbridge|webview/i.test(m))return;
+  window.__err(m+' ('+f.split('/').pop()+':'+e.lineno+')')
+});
 </script>
 <script src="game.js"></script>
 </body>
