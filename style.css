@@ -56,6 +56,11 @@ button:focus-visible{outline:3px solid #ffbf3d;outline-offset:2px}
 .card button{padding:10px;min-height:46px;font-size:18px;margin-top:8px}
 .card .tip{margin:8px 0 0;font-size:12px}
 #stg{gap:5px}
+#cfp{margin-top:6px}
+#cfp label{display:flex;justify-content:space-between;align-items:center;font-size:14px;margin:6px 0;color:var(--muted)}
+#cfp input[type=range]{width:55%}
+#touch{zoom:var(--ps,1)}
+body.lh #touch{flex-direction:row-reverse}
 #stg button{width:40px;height:40px;font-size:16px}
 #skn button{width:42px;height:42px}
 @media (max-width:420px){#hud{gap:6px;padding:6px 8px}#hud button{width:38px;height:38px;font-size:16px}}
