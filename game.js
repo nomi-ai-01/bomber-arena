@@ -4,7 +4,7 @@ const DIRS=[[0,-1],[1,0],[0,1],[-1,0]];
 const COLS=['#3da5ff','#ff5d73','#44d17a','#ffc83d'];
 const SP=[[1,1],[W-2,1],[1,H-2],[W-2,H-2]];
 const STAGES=[{n:'Warm-up',bots:1,spd:2.8,dens:.6,shr:55,th:0},{n:'Brick yard',bots:2,spd:3.2,dens:.72,shr:45,th:0},{n:'Triple threat',bots:3,spd:3.4,dens:.74,shr:40,th:1},{n:'Fast bots',bots:3,spd:4,dens:.78,shr:32,th:1},{n:'Ice rush',bots:3,spd:4.2,dens:.7,shr:30,th:2},{n:'Dense maze',bots:3,spd:4.4,dens:.86,shr:28,th:2},{n:'Speed storm',bots:3,spd:4.8,dens:.78,shr:24,th:3},{n:'Elite arena',bots:3,spd:5,dens:.8,shr:20,th:3},{n:'Frost maze',bots:3,spd:5,dens:.84,shr:22,th:2},{n:'Jungle hunt',bots:3,spd:5.1,dens:.76,shr:20,th:1},{n:'Lava storm',bots:3,spd:5.3,dens:.8,shr:18,th:3},{n:'Boss: Champion',boss:1,bots:3,spd:5.6,dens:.82,shr:16,th:3}];
-const TH=[['#2b3654','#26304c','#5d6a8f','#7f8db5','#c4673a'],['#2f3a2c','#293425','#5f7a56','#86a77a','#b8803a'],['#26405a','#223a52','#5f8fb0','#9fd0ee','#8fb4c8'],['#40262f','#3a2229','#8f5a66','#c27f8d','#d2512f']];
+const TH=[['#4a7c3a','#437234','#8a8f9c','#b5bac6','#c4673a'],['#d9b36a','#cfa65c','#a0693a','#c98d55','#b5532f'],['#b9dcee','#a8d0e6','#5f8fb0','#9fd0ee','#8fb4c8'],['#3a1f1f','#331a1a','#6b2c2c','#a04545','#d2512f'],['#5c5c6e','#52525f','#2f2f3a','#4a4a5c','#8a6b4a'],['#f6c3dc','#f2b5d2','#d86aa5','#ee9ac8','#6fb8e8'],['#141a33','#10152b','#2d3a73','#4a5fb5','#7a4fc4'],['#2f5a2c','#2a5127','#5b3d22','#8a5e36','#d29a2e']];
 const SKINS=['#3da5ff','#b46cff','#ff8fd1','#f2f4ff','#ffc83d','#44d17a','#ff5d73','#222a44'],PRICE=[0,0,0,0,80,120,160,250];
 const NS=STAGES.length;
 let mode2=false,lives=3,held2=[],bombReq2=false,combo=0,lastK=-9,lvl=0,unlocked=1,base=0,rng=Math.random,daily=false,skin=0,prevLvl=0;
@@ -21,6 +21,7 @@ try{Object.assign(cfg,JSON.parse(localStorage.getItem('bomber-cfg')||'{}'))}catc
 const saveCfg=()=>{try{localStorage.setItem('bomber-cfg',JSON.stringify(cfg))}catch(e){}};
 const vib=n=>{if(cfg.vib&&navigator.vibrate)try{navigator.vibrate(n)}catch(e){}};
 
+let door={x:-1,y:-1,shown:false};
 /* ---------- audio ---------- */
 let ac;
 function snd(f,d,type,v,slide,m){
@@ -98,6 +99,8 @@ function init(){
  SP.forEach(([sx,sy])=>{for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){
   const x=sx+dx,y=sy+dy;
   if(Math.abs(dx)+Math.abs(dy)<=1&&x>0&&y>0&&x<W-1&&y<H-1&&grid[y][x]===2)grid[y][x]=0;}});
+ {const c=[];for(let y=1;y<H-1;y++)for(let x=1;x<W-1;x++)if(grid[y][x]===2&&Math.abs(x-1)+Math.abs(y-1)>5)c.push([x,y]);
+ const d=c.length?c[Math.floor(rng()*c.length)]:[W-2,5];if(!c.length)grid[5][W-2]=0;door={x:d[0],y:d[1],shown:!c.length}}
  ps=SP.slice(0,Math.min(4,STAGES[lvl].bots+1+(mode2?1:0))).map((s,i)=>({i,ai:i>0&&!(mode2&&i===1),cx:s[0],cy:s[1],mv:null,dir:2,alive:true,maxB:1,range:2,spd:i&&!(mode2&&i===1)?STAGES[lvl].spd*[.8,1,1.2][cfg.diff]:4.2,col:i?COLS[i]:SKINS[skin],carry:0,sh:0,inv:0}));
  shrinkList=spiral();shrinkIdx=0;shrinkT=0;time=0;endT=0;result='';lastK=-9;combo=0;
  if(STAGES[lvl].boss){const b=ps[mode2?2:1];if(b){b.boss=true;b.sh=3;b.range=4;b.maxB=2;b.col='#ff2e63'}}
@@ -129,7 +132,7 @@ function explode(b){
   flames.push({x,y,t:.45,o:b.o});
   items[y][x]=null;spark(x,y,'#ffb43d',5,110);
   if(grid[y][x]===2){
-   grid[y][x]=0;spark(x,y,TH[STAGES[lvl].th][4],8,120);
+   grid[y][x]=0;spark(x,y,TH[lvl%8][4],8,120);if(x===door.x&&y===door.y&&!door.shown){door.shown=true;snd(660,.3,'triangle',.08,500);note(x,y,'EXIT FOUND!','#7dffb0')}
    if(!b.o.ai){score+=10;note(x,y,'+10','#ffd23d')}
    const r=rng();
    if(r<.42)items[y][x]=r<.11?'B':r<.22?'F':r<.31?'S':r<.37?'H':'K';
@@ -211,7 +214,7 @@ function tryMove(p,d,carry){
 function closeNext(){
  while(shrinkIdx<shrinkList.length){
   const [x,y]=shrinkList[shrinkIdx++];
-  if(solid(grid[y][x]))continue;
+  if(solid(grid[y][x])||(x===door.x&&y===door.y))continue;
   grid[y][x]=3;items[y][x]=null;shake=Math.max(shake,3);spark(x,y,'#c27f8d',6,80);
   bombs=bombs.filter(b=>!(b.x===x&&b.y===y));
   ps.forEach(p=>{if(p.alive&&((p.cx===x&&p.cy===y)||(p.mv&&p.mv.x===x&&p.mv.y===y)))kill(p)});
@@ -265,7 +268,7 @@ function update(dt){
  const left=ps.filter(p=>p.ai&&p.alive).length,hum=ps.filter(p=>!p.ai&&p.alive).length;
  if(!endT){
   if(!hum){endT=1.3;result=left?'lose':'draw'}
-  else if(!left){endT=1.3;result='win';score+=500+Math.max(0,Math.round(150-time));snd(520,.4,'triangle',.07,400)}
+  else if(!left&&door.shown&&ps.some(p=>!p.ai&&p.alive&&lc(p)[0]===door.x&&lc(p)[1]===door.y)){endT=1.3;result='win';score+=500+Math.max(0,Math.round(150-time));snd(520,.4,'triangle',.07,400)}
  }else if((endT-=dt)<=0)finish();
 }
 
@@ -321,7 +324,7 @@ function drawP(p){
 }
 const IC={B:['#3d8bff','B'],F:['#ff5a3d','F'],S:['#2ecc71','S'],H:['#a45cff','H'],K:['#ffa31a','K']};
 function draw(){
- const th=TH[STAGES[lvl].th];
+ const th=TH[lvl%8];
  ctx.setTransform(cv.width/CW,0,0,cv.height/CH,0,0);
  ctx.clearRect(0,0,CW,CH);
  ctx.save();
@@ -334,7 +337,12 @@ function draw(){
   else if(g===2)brick(px,py,th[4]);
   else if(y>0&&solid(grid[y-1][x])){ctx.fillStyle='rgba(0,0,0,.2)';ctx.fillRect(px,py,T,8)}
  }
- ctx.textAlign='center';ctx.textBaseline='middle';ctx.font='bold 18px Trebuchet MS, sans-serif';
+ ctx.textAlign='center';ctx.textBaseline='middle';
+ if(door.shown){const px=door.x*T,py=door.y*T,op=!ps.some(p=>p.ai&&p.alive);
+  ctx.fillStyle=op?'#2ecc71':'#7a4a2a';rr(px+6,py+4,T-12,T-8,10);ctx.fill();
+  ctx.fillStyle=op?'#0b3d1e':'#2b180c';rr(px+12,py+12,T-24,T-16,8);ctx.fill();
+  ctx.font='bold 13px Trebuchet MS, sans-serif';ctx.fillStyle='#fff';ctx.fillText(op?'EXIT':'🔒',px+T/2,py+T/2+4)}
+ ctx.font='bold 18px Trebuchet MS, sans-serif';
  for(let y=0;y<H;y++)for(let x=0;x<W;x++){
   const it=items[y][x];if(!it)continue;
   const cx=x*T+T/2,cy=y*T+T/2+Math.sin(an*4+x)*2;
@@ -370,7 +378,10 @@ function draw(){
  ctx.restore();
  const v=ctx.createRadialGradient(CW/2,CH/2,CH*.35,CW/2,CH/2,CW*.65);v.addColorStop(0,'rgba(0,0,0,0)');v.addColorStop(1,'rgba(0,0,0,.35)');
  ctx.fillStyle=v;ctx.fillRect(0,0,CW,CH);
- if(time>STAGES[lvl].shr&&state==='play'&&shrinkIdx<shrinkList.length){
+ if(state==='play'){const o=!ps.some(p=>p.ai&&p.alive);
+  ctx.textAlign='center';ctx.font='bold 14px Trebuchet MS, sans-serif';ctx.fillStyle='rgba(255,255,255,.8)';
+  ctx.fillText(!door.shown?'Break bricks to find the EXIT door':o?'RUN to the EXIT!':'Defeat all bots, then enter the EXIT',CW/2,CH-12)}
+ if(time>STAGES[lvl].shr&&state==='play'&&shrinkIdx<shrinkList.length){ctx.textAlign='center';
   ctx.font='bold 16px Trebuchet MS, sans-serif';ctx.fillStyle='rgba(255,255,255,'+(.55+.4*Math.sin(an*5))+')';
   ctx.fillText('Arena is shrinking!',CW/2,T/2);
  }
@@ -397,18 +408,19 @@ function buildSkn(){const e=$('skn');e.innerHTML='';own.forEach(i=>{const s=SKIN
 
 /* music: bass + lead + hi-hat + kick */
 let mt=null,mstep=0;
-const LD=[[330,0,392,0,440,0,392,0,330,0,294,0,262,0,294,0],[262,0,330,0,392,0,330,0,294,0,349,0,440,0,349,0]];
-const BS=[[110,110,0,110,131,131,0,131],[98,98,0,98,123,123,0,123]];
+const LEAD=[12,-1,15,-1,19,-1,15,-1,17,-1,19,17,15,-1,12,-1,14,-1,17,-1,21,-1,17,-1,19,-1,21,19,17,-1,14,-1];
+const BASSN=[0,0,0,7,5,5,5,12,3,3,3,10,7,7,7,5];
+const hz=n=>220*Math.pow(2,n/12);
 function music(on){
  clearInterval(mt);mt=null;
  if(on&&!muted)mt=setInterval(()=>{
-  const s=mstep++,sec=(s>>4)&1,n=LD[sec][s%16],b=BS[sec][(s>>1)%8];
-  if(n)snd(n,.18,'square',.03,0,1);
-  if(s%2===0&&b)snd(b,.3,'triangle',.05,0,1);
-  if(s%4===2)snd(4000,.03,'square',.012,-1500,1);
-  if(s%8===0)snd(90,.12,'sine',.07,-50,1);
-  if(s%8===4)noise(.08,.07,5000,1,1500);
- },200);
+  const s=mstep++,tr=(lvl%4)*2,n=LEAD[s%32],b=BASSN[(s>>1)%16];
+  if(n>=0)snd(hz(n+tr),.11,'square',.028,0,1);
+  if(s%2===0)snd(hz(b+tr-12),.2,'triangle',.06,0,1);
+  if(s%4===0)snd(110,.1,'sine',.09,-70,1);
+  if(s%8===4)noise(.1,.08,5000,1,1200);
+  if(s%2===1)noise(.03,.025,9000,1,6000);
+ },115);
 }
 function begin(newRun){if(newRun)score=0;base=score;rng=daily?mul(dayKey()*10+lvl):Math.random;init();held=[];held2=[];state='play';ov.hidden=true;$('home').hidden=true;go.blur();snd(440,.15,'triangle',.05,200);music(true)}
 function desc(){const s=STAGES[lvl];return 'Stage '+(lvl+1)+': '+s.n+'. Beat '+s.bots+(s.bots>1?' bots':' bot')+' before the arena starts shrinking at '+s.shr+' seconds.'}
